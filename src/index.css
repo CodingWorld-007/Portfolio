@@ -11,6 +11,7 @@
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
+  color-scheme: dark;
 }
 
 body {
@@ -315,22 +316,6 @@ textarea:focus {
 
   .premium-border {
     border: 1px solid rgba(255, 255, 255, 0.3);
-  }
-}
-
-/* Light mode support (if user prefers light theme) */
-@media (prefers-color-scheme: light) {
-  body {
-    background: #ffffff;
-    color: #1a1a1a;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: #ffffff;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #333333, #cccccc);
   }
 }
 
