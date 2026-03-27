@@ -1,7 +1,14 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FiMail, FiLinkedin, FiGithub, FiArrowRight, FiCheck, FiX } from 'react-icons/fi'
+import { FiMail, FiLinkedin, FiGithub, FiArrowRight, FiCheck, FiX, FiCopy } from 'react-icons/fi'
 import useFormValidation from '../hooks/useFormValidation'
+import emailjs from 'emailjs-com'
+
+// Initialize EmailJS - Replace with your EmailJS Public Key
+// Get it from: https://dashboard.emailjs.com/ (Account → API Keys)
+const EMAILJS_PUBLIC_KEY = 'firolP4JZnyBzRVeW'
+const EMAILJS_SERVICE_ID = 'service_0d275tc'
+const EMAILJS_TEMPLATE_ID = 'template_pxzx0a7'
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -13,8 +20,14 @@ const Contact = () => {
   const [touched, setTouched] = useState({})
   const [status, setStatus] = useState(null)
   const [focusedField, setFocusedField] = useState(null)
+  const [copiedEmail, setCopiedEmail] = useState(false)
   
   const { validateField, isFormValid } = useFormValidation()
+
+  // Initialize EmailJS
+  useEffect(() => {
+    emailjs.init(EMAILJS_PUBLIC_KEY)
+  }, [])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -58,19 +71,44 @@ const Contact = () => {
     }
     
     setStatus('sending')
-    setTimeout(() => {
-      setStatus('success')
-      setTimeout(() => {
-        setFormData({ name: '', email: '', message: '' })
-        setErrors({})
-        setTouched({})
-        setStatus(null)
-      }, 2000)
-    }, 1000)
+    
+    // Send email via EmailJS
+    const templateParams = {
+        to_email: 'developer.amanjoshi@gmail.com',
+        from_name: formData.name,
+        from_email: formData.email,
+        message: formData.message,
+        reply_to: formData.email,
+      }
+
+    emailjs
+      .send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+      .then(() => {
+        setStatus('success')
+        setTimeout(() => {
+          setFormData({ name: '', email: '', message: '' })
+          setErrors({})
+          setTouched({})
+          setStatus(null)
+        }, 2000)
+      })
+      .catch((error) => {
+        console.error('Email send failed:', error)
+        setStatus('error')
+        setTimeout(() => {
+          setStatus(null)
+        }, 3000)
+      })
+  }
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text)
+    setCopiedEmail(true)
+    setTimeout(() => setCopiedEmail(false), 2000)
   }
 
   const links = [
-    { icon: FiMail, label: 'Email', value: 'amanjoshi9891@gmail.com', href: 'mailto:amanjoshi9891@gmail.com' },
+    { icon: FiMail, label: 'Email', value: 'developer.amanjoshi@gmail.com', href: 'mailto:developer.amanjoshi@gmail.com' },
     { icon: FiLinkedin, label: 'LinkedIn', value: '@amanajoshi', href: 'https://linkedin.com/in/amanajoshi' },
     { icon: FiGithub, label: 'GitHub', value: 'View Profile', href: 'https://github.com' },
   ]
@@ -131,44 +169,98 @@ const Contact = () => {
               viewport={{ once: true, margin: '-50px' }}
             >
               {links.map((link, idx) => (
-                <motion.a
+                <motion.div
                   key={link.label}
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   variants={linkVariants}
                   transition={{ delay: idx * 0.1 }}
-                  className="flex items-center gap-4 p-4 rounded-lg border border-white/10 premium-bg smart-hover group overflow-hidden relative"
-                  whileHover={{ borderColor: 'rgba(255,255,255,0.2)', backgroundColor: 'rgba(255,255,255,0.05)' }}
+                  className="flex items-center gap-4"
                 >
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-                    initial={{ x: '-100%' }}
-                    whileHover={{ x: '100%' }}
-                    transition={{ duration: 0.6 }}
-                  />
-                  
-                  <motion.div 
-                    whileHover={{ rotate: 360, scale: 1.1 }}
-                    transition={{ duration: 0.6 }}
-                  >
-                    <link.icon className="text-gray-400 group-hover:text-white transition-colors relative z-10" size={24} />
-                  </motion.div>
-                  
-                  <div className="relative z-10">
-                    <p className="text-sm text-gray-500">{link.label}</p>
-                    <p className="text-white font-medium">{link.value}</p>
-                  </div>
-                  
-                  <motion.div
-                    initial={{ x: 0, opacity: 0 }}
-                    whileHover={{ x: 4, opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                    className="ml-auto text-gray-500 group-hover:text-white transition-colors relative z-10"
-                  >
-                    <FiArrowRight />
-                  </motion.div>
-                </motion.a>
+                  {link.label === 'Email' ? (
+                    <motion.button
+                      onClick={() => copyToClipboard(link.value)}
+                      className="w-full flex items-center gap-4 p-4 rounded-lg border border-white/10 premium-bg smart-hover group overflow-hidden relative"
+                      whileHover={{ borderColor: 'rgba(255,255,255,0.2)', backgroundColor: 'rgba(255,255,255,0.05)' }}
+                    >
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                        initial={{ x: '-100%' }}
+                        whileHover={{ x: '100%' }}
+                        transition={{ duration: 0.6 }}
+                      />
+                      
+                      <motion.div 
+                        whileHover={{ rotate: 360, scale: 1.1 }}
+                        transition={{ duration: 0.6 }}
+                      >
+                        <link.icon className="text-gray-400 group-hover:text-white transition-colors relative z-10" size={24} />
+                      </motion.div>
+                      
+                      <div className="relative z-10 flex-1 text-left">
+                        <p className="text-sm text-gray-500">{link.label}</p>
+                        <p className="text-white font-medium">{link.value}</p>
+                      </div>
+                      
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={copiedEmail ? { scale: 1 } : { scale: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="text-green-400 relative z-10"
+                      >
+                        <FiCheck size={20} />
+                      </motion.div>
+
+                      <AnimatePresence mode="wait">
+                        {!copiedEmail && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="text-gray-500 group-hover:text-white transition-colors relative z-10"
+                          >
+                            <FiCopy size={18} />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.button>
+                  ) : (
+                    <motion.a
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full flex items-center gap-4 p-4 rounded-lg border border-white/10 premium-bg smart-hover group overflow-hidden relative"
+                      whileHover={{ borderColor: 'rgba(255,255,255,0.2)', backgroundColor: 'rgba(255,255,255,0.05)' }}
+                    >
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                        initial={{ x: '-100%' }}
+                        whileHover={{ x: '100%' }}
+                        transition={{ duration: 0.6 }}
+                      />
+                      
+                      <motion.div 
+                        whileHover={{ rotate: 360, scale: 1.1 }}
+                        transition={{ duration: 0.6 }}
+                      >
+                        <link.icon className="text-gray-400 group-hover:text-white transition-colors relative z-10" size={24} />
+                      </motion.div>
+                      
+                      <div className="relative z-10 flex-1 text-left">
+                        <p className="text-sm text-gray-500">{link.label}</p>
+                        <p className="text-white font-medium">{link.value}</p>
+                      </div>
+                      
+                      <motion.div
+                        initial={{ x: 0, opacity: 0 }}
+                        whileHover={{ x: 4, opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                        className="text-gray-500 group-hover:text-white transition-colors relative z-10"
+                      >
+                        <FiArrowRight />
+                      </motion.div>
+                    </motion.a>
+                  )}
+                </motion.div>
               ))}
             </motion.div>
           </motion.div>
@@ -310,6 +402,17 @@ const Contact = () => {
                   transition={{ duration: 0.3 }}
                 >
                   ✓ Message sent! I'll get back to you soon.
+                </motion.div>
+              )}
+              {status === 'error' && (
+                <motion.div
+                  className="p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  ✗ Failed to send message. Please try again or contact me directly.
                 </motion.div>
               )}
             </AnimatePresence>

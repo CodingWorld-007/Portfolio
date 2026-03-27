@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { FiArrowRight } from 'react-icons/fi'
+import { FiArrowRight, FiDownload } from 'react-icons/fi'
 
 const Hero = () => {
   const [scrollY, setScrollY] = useState(0)
@@ -112,6 +112,21 @@ const Hero = () => {
               transition={{ duration: 1.5, repeat: Infinity }}
             >
               <FiArrowRight size={18} />
+            </motion.div>
+          </motion.a>
+          <motion.a
+            href="/Aman_Joshi_Resume.pdf"
+            download
+            className="px-8 py-3 rounded-lg border border-white/20 text-white font-medium hover:bg-white/5 hover:border-white/40 transition-colors flex items-center justify-center gap-2 group smart-hover"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <span>Download Resume</span>
+            <motion.div
+              whileHover={{ y: 2 }}
+              transition={{ duration: 0.3 }}
+            >
+              <FiDownload size={18} />
             </motion.div>
           </motion.a>
           <motion.a

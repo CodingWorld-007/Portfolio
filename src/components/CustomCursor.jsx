@@ -1,55 +1,72 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 
 const CustomCursor = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [isHoveringInteractive, setIsHoveringInteractive] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
+  
+  // Use refs to avoid state updates during mousemove (which causes lag)
+  const positionRef = useRef({ x: 0, y: 0 })
+  const animationFrameRef = useRef(null)
+
+  // Update position smoothly with RAF instead of relying on event frequency
+  const updatePosition = useCallback(() => {
+    setMousePosition({ ...positionRef.current })
+    animationFrameRef.current = requestAnimationFrame(updatePosition)
+  }, [])
 
   useEffect(() => {
+    // Simple mousemove that just updates the ref (no state = no lag!)
     const handleMouseMove = (e) => {
-      setMousePosition({ x: e.clientX, y: e.clientY })
+      positionRef.current = { x: e.clientX, y: e.clientY }
       setIsVisible(true)
     }
 
     const handleMouseEnter = () => setIsVisible(true)
     const handleMouseLeave = () => setIsVisible(false)
 
-    // Check for interactive elements
+    // Optimized interactive element detection - simplified & debounced
     const handleMouseover = (e) => {
-      const interactiveElements = [
-        'button',
-        'a',
-        '[role="button"]',
-        'input',
-        'textarea',
-        '.smart-hover',
-        '.group'
-      ]
+      const target = e.target
+      const isInteractive = 
+        target.tagName === 'BUTTON' ||
+        target.tagName === 'A' ||
+        target.hasAttribute('role') && target.getAttribute('role') === 'button' ||
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.classList.contains('smart-hover') ||
+        target.classList.contains('group') ||
+        target.closest('button') ||
+        target.closest('a') ||
+        target.closest('.smart-hover') ||
+        target.closest('.group')
       
-      if (interactiveElements.some(selector => e.target.matches(selector) || e.target.closest(selector))) {
-        setIsHoveringInteractive(true)
-      }
+      setIsHoveringInteractive(isInteractive)
     }
 
     const handleMouseout = () => {
       setIsHoveringInteractive(false)
     }
 
-    window.addEventListener('mousemove', handleMouseMove)
+    // Start RAF loop
+    animationFrameRef.current = requestAnimationFrame(updatePosition)
+
+    window.addEventListener('mousemove', handleMouseMove, { passive: true })
     window.addEventListener('mouseenter', handleMouseEnter)
     window.addEventListener('mouseleave', handleMouseLeave)
-    document.addEventListener('mouseover', handleMouseover)
-    document.addEventListener('mouseout', handleMouseout)
+    document.addEventListener('mouseover', handleMouseover, { passive: true })
+    document.addEventListener('mouseout', handleMouseout, { passive: true })
 
     return () => {
+      cancelAnimationFrame(animationFrameRef.current)
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('mouseenter', handleMouseEnter)
       window.removeEventListener('mouseleave', handleMouseLeave)
       document.removeEventListener('mouseover', handleMouseover)
       document.removeEventListener('mouseout', handleMouseout)
     }
-  }, [])
+  }, [updatePosition])
 
   return (
     <>
@@ -60,7 +77,7 @@ const CustomCursor = () => {
         }
       `}</style>
 
-      {/* Main cursor circle */}
+      {/* Main cursor circle - smooth linear position, spring for scale */}
       <motion.div
         className="fixed w-6 h-6 rounded-full border-2 border-white/80 pointer-events-none z-50 mix-blend-screen"
         animate={{
@@ -70,14 +87,14 @@ const CustomCursor = () => {
           opacity: isVisible ? 1 : 0,
         }}
         transition={{
-          type: 'spring',
-          stiffness: 500,
-          damping: 28,
-          mass: 0.5,
+          x: { type: 'tween', duration: 0.02, ease: 'linear' }, // Smooth linear motion
+          y: { type: 'tween', duration: 0.02, ease: 'linear' },
+          scale: { type: 'spring', stiffness: 700, damping: 25, mass: 0.1 }, // Spring for interaction
+          opacity: { duration: 0.15 }
         }}
       />
 
-      {/* Outer glow ring */}
+      {/* Outer glow ring - delayed smooth motion */}
       <motion.div
         className="fixed w-10 h-10 rounded-full border border-white/30 pointer-events-none z-50"
         animate={{
@@ -87,14 +104,14 @@ const CustomCursor = () => {
           opacity: isVisible ? 0.6 : 0,
         }}
         transition={{
-          type: 'spring',
-          stiffness: 300,
-          damping: 25,
-          mass: 0.7,
+          x: { type: 'tween', duration: 0.04, ease: 'linear' }, // Slight delay for trailing effect
+          y: { type: 'tween', duration: 0.04, ease: 'linear' },
+          scale: { type: 'spring', stiffness: 600, damping: 20, mass: 0.15 },
+          opacity: { duration: 0.15 }
         }}
       />
 
-      {/* Dot in center */}
+      {/* Dot in center - snaps to cursor instantly */}
       <motion.div
         className="fixed w-1.5 h-1.5 rounded-full bg-white pointer-events-none z-50 mix-blend-screen"
         animate={{
@@ -104,10 +121,10 @@ const CustomCursor = () => {
           opacity: isVisible ? 1 : 0,
         }}
         transition={{
-          type: 'spring',
-          stiffness: 600,
-          damping: 30,
-          mass: 0.3,
+          x: { type: 'tween', duration: 0.01, ease: 'linear' }, // Ultra-responsive center dot
+          y: { type: 'tween', duration: 0.01, ease: 'linear' },
+          scale: { type: 'spring', stiffness: 800, damping: 30, mass: 0.05 },
+          opacity: { duration: 0.15 }
         }}
       />
     </>

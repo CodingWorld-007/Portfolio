@@ -17,7 +17,7 @@ const Footer = () => {
   const socialLinks = [
     { label: 'GitHub', href: 'https://github.com', icon: FiGithub },
     { label: 'LinkedIn', href: 'https://linkedin.com/in/amanajoshi', icon: FiLinkedin },
-    { label: 'Resume', href: '#', icon: FiDownload },
+    { label: 'Resume', href: '/Aman_Joshi_Resume.pdf', icon: FiDownload, download: true },
   ]
 
   const quickLinks = [
@@ -200,8 +200,9 @@ const Footer = () => {
               <motion.a
                 key={link.label}
                 href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
+                target={link.download ? undefined : "_blank"}
+                rel={link.download ? undefined : "noopener noreferrer"}
+                download={link.download}
                 className="relative group"
                 initial={{ opacity: 0, scale: 0.5 }}
                 whileInView={{ opacity: 1, scale: 1 }}
