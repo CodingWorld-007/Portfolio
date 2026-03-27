@@ -15,8 +15,8 @@ const Footer = () => {
   const currentYear = new Date().getFullYear()
 
   const socialLinks = [
-    { label: 'GitHub', href: 'https://github.com', icon: FiGithub },
-    { label: 'LinkedIn', href: 'https://linkedin.com/in/amanajoshi', icon: FiLinkedin },
+    { label: 'GitHub', href: 'https://github.com/CodingWorld-007', icon: FiGithub },
+    { label: 'LinkedIn', href: 'https://linkedin.com/in/amanajjoshi', icon: FiLinkedin },
     { label: 'Resume', href: '/Aman_Joshi_Resume.pdf', icon: FiDownload, download: true },
   ]
 
