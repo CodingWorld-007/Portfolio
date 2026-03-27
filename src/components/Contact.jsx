@@ -109,7 +109,7 @@ const Contact = () => {
 
   const links = [
     { icon: FiMail, label: 'Email', value: 'developer.amanjoshi@gmail.com', href: 'mailto:developer.amanjoshi@gmail.com' },
-    { icon: FiLinkedin, label: 'LinkedIn', value: '@amanajjoshi', href: 'linkedin.com/in/amanajjoshi' },
+    { icon: FiLinkedin, label: 'LinkedIn', value: '@amanajjoshi', href: 'https://linkedin.com/in/amanajjoshi' },
     { icon: FiGithub, label: 'GitHub', value: 'View Profile', href: 'https://github.com/CodingWorld-007' },
   ]
 
